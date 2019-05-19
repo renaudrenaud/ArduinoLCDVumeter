@@ -3,15 +3,12 @@ modified by varind in 2013
 this code is public domain, enjoy!
  */
 #include <Wire.h>
-//#include "DS3231RTC.h"
-//#include <DS3231.h>
-// RC DS3231  rtc(SDA, SCL);
 #include <FastLED.h> 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-// #include <LiquidCrystal.h>
+
 #include <LiquidCrystal_I2C.h>
 #include <fix_fft.h>
-#include <Servo.h> 
+
 #define BUFF_MAX 128
 #define LCHAN 0
 #define RCHAN 1
@@ -41,7 +38,6 @@ unsigned int recv_size = 0;
 unsigned long prev, interval = 1000;
 
 
-// LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //saves 5 pwm pins for servos, leds, etc
 LiquidCrystal_I2C lcd(0x3F,16,2);
 
 // VU METER CHARACTERS
@@ -232,7 +228,7 @@ void mono(){
     else{
       lcd.setCursor(x,0);  // draw first row
       if (y == 9){
-        lcd.write(" ");  
+        lcd.write(32); // RC  was " "
       }
       else {
         lcd.write(y-8);  // same chars 1-8 as 9-16
@@ -270,7 +266,7 @@ void stereo8(){
     else{
       lcd.setCursor(x,0);  // draw first row
       if (y == 9){
-        lcd.write(" ");  
+        lcd.write(32);  
       }
       else {
         lcd.write(y-8);  // same chars 1-8 as 9-16
@@ -303,7 +299,7 @@ void stereo8(){
     else{
       lcd.setCursor(x-8,0);  // draw first row
       if (y == 9){
-        lcd.write(" ");  
+        lcd.write(32);  
       }
       else {
         lcd.write(y-8);  // same chars 1-8 as 9-16
@@ -343,7 +339,7 @@ void  bar  ( int rows,int levs )
     if( f )
       lcd.write(8);
     else
-      lcd.write(" ");
+      lcd.write(32);
   }
   if( levs>lmax[rows] )
   {
@@ -450,36 +446,7 @@ void simple() {
  
 }
 
-void timedate()
-{ 
-    lcd.print("No Time");
 
-}
-
-void setTheTime(char *cmd)
-{
-    lcd.print("No SET Time");
-}
-
-void printMonth(int month)
-{
-  switch(month)
-  {
-    case 1: lcd.print(" January ");break;
-    case 2: lcd.print(" February ");break;
-    case 3: lcd.print(" March ");break;
-    case 4: lcd.print(" April ");break;
-    case 5: lcd.print(" May ");break;
-    case 6: lcd.print(" June ");break;
-    case 7: lcd.print(" July ");break;
-    case 8: lcd.print(" August ");break;
-    case 9: lcd.print(" September ");break;
-    case 10: lcd.print(" October ");break;
-    case 11: lcd.print(" November ");break;
-    case 12: lcd.print(" December ");break;
-    default: lcd.print(" Error ");break;
-  } 
-}
 
 // the loop routine runs over and over again forever;
 void loop() {
@@ -496,7 +463,7 @@ switch(lightPattern) {
          simple();
          break;
      case 2:
-         timedate();
+         // timedate();
          break;
      case 3:
          All();
