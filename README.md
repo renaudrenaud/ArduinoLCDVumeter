@@ -1,6 +1,10 @@
 # ArduinoLCDVumeter
 Arduino LCD Vumeter
 
+Following what I've seen on youtube:
+https://www.youtube.com/channel/UCOG6Bi2kvpDa1c8gHWZI5CQ
+
+
 This is a trial to reuse code from google drive located here:
 https://drive.google.com/file/d/1CDsYfHCmGF29VmMfurZrjdbP1BOJ_7Rj/view
 
