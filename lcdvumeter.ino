@@ -68,6 +68,7 @@ byte v8[8] = {
 
 
 void setup() {
+  Serial.begin(9600);
   lcd.backlight();
   Wire.begin();
   // DS3231_init(DS3231_INTCN);
@@ -109,12 +110,12 @@ void setup() {
     }
     lcd.setCursor(0, 0);
     lcd.print(" AudioFoLights  ");
-    delay(10);
+    delay(2);
   }
 
 
   lcd.clear();
-  delay(500);
+  delay(200);
 }
 
 
@@ -122,11 +123,13 @@ void setup() {
 void vu() {
   //  delay(10);
   for (i = 0; i < 64; i++) {
-    val = ((analogRead(LCHAN) / 4 ) - 128);  // chose how to interpret the data from analog in
+    val = ((analogRead(LCHAN) * 8 ) - 128 + 128);  // chose how to interpret the data from analog in
+    // Serial.print(val);
+    // Serial.println();
     data[i] = val;
     im[i] = 0;
     if (channels == 2) {
-      Rval = ((analogRead(RCHAN) / 4 ) - 128);  // chose how to interpret the data from analog in
+      Rval = ((analogRead(RCHAN) * 8 ) - 128);  // chose how to interpret the data from analog in
       Rdata[i] = Rval;
       Rim[i] = 0;
     }
@@ -468,31 +471,31 @@ void loop() {
   }
   if (lightPattern > nPatterns) lightPattern = 1;
   oldButtonVal = buttonVal;
-  lightPattern = 4;
+  
   switch (lightPattern) {
     case 1:
-      simple();
-      break;
-    case 2:
-      // timedate();
-      break;
-    case 3:
-      All();
-      break;
-    case 4:
       bars();
       break;
-    case 5:
+    case 2:
       mono();
       break;
-    case 6:
+    case 3:
       stereo8();
+      break;
+    case 4:
+      stereo16();
+      break;
+    case 5:
+      Two16_LCD();
+      break;
+    case 6:
+      All();
       break;
     case 7:
       stereo16();
       break;
     case 8:
-      Two16_LCD();
+      bars();
       break;
     case 9:
       lcd.clear();
