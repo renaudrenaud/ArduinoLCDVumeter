@@ -123,13 +123,13 @@ void setup() {
 void vu() {
   //  delay(10);
   for (i = 0; i < 64; i++) {
-    val = ((analogRead(LCHAN) * 8 ) - 128 + 128);  // chose how to interpret the data from analog in
+    val = ((analogRead(LCHAN) * 16 ) - 128 + 128);  // chose how to interpret the data from analog in
     // Serial.print(val);
     // Serial.println();
     data[i] = val;
     im[i] = 0;
     if (channels == 2) {
-      Rval = ((analogRead(RCHAN) * 8 ) - 128);  // chose how to interpret the data from analog in
+      Rval = ((analogRead(RCHAN) * 16 ) - 128 + 128);  // chose how to interpret the data from analog in
       Rdata[i] = Rval;
       Rim[i] = 0;
     }
