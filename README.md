@@ -12,8 +12,8 @@ I want to change some things:
 - use an I2C LCD instead of usual LCD to save cables, time and useless complications
 - no temp nor time required
 
-... Ok after the sunday and monday night, it is working like I want.
+... Ok after one sunday and one monday night, it is working like I want.
 
 There is a lot of evolutions I am thinking, but for the moment I am more than happy.
 
-I will document on the Wiki.
+Documentation is on the Wiki.
