@@ -12,8 +12,10 @@
 #define BUFF_MAX 128
 #define LCHAN 0
 #define RCHAN 1
-int buttonPin = 0;    // momentary push button on pin 0
+int buttonPin = 0;      // momentary push button on pin 0
+int buttonPin1 = 1;     // momentary push for sensitivity change
 int oldButtonVal = 0;
+int oldbuttonSensitivity = 0;
 const int channels = 2;
 const int xres = 16;
 const int yres = 8;
@@ -30,6 +32,7 @@ int x = 0, y = 0, z = 0;
 int load;
 int nPatterns = 9 ;
 int lightPattern = 1;
+int sensitivity = 16;
 int   lmax[2];                                        // level max memory
 int   dly[2];   // delay & speed for peak return
 uint8_t time[8];
@@ -76,6 +79,9 @@ void setup() {
   // rtc.begin();
   pinMode(buttonPin, INPUT);
   digitalWrite(buttonPin, HIGH);  // button pin is HIGH, so it drops to 0 if pressed
+  pinMode(buttonPin1, INPUT);
+  digitalWrite(buttonPin1, HIGH);  // button pin is HIGH, so it drops to 0 if pressed
+  
   //setTheTime("305017101012018");     // ssmmhhDDMMYYYY set time once in the given format
   lcd.begin(16, 2);
   lcd.clear();
@@ -109,10 +115,17 @@ void setup() {
       lcd.write(1);
     }
     lcd.setCursor(0, 0);
-    lcd.print(" AudioFoLights  ");
+    lcd.print("  AudioFoLight  ");
     delay(2);
+    
+    ;
   }
 
+    lcd.setCursor(0, 0);
+    lcd.print("Sensitivity     ");
+    lcd.setCursor(0, 1);
+    lcd.print("= 16 (-4 to +24)");
+    delay(3000);
 
   lcd.clear();
   delay(200);
@@ -123,13 +136,27 @@ void setup() {
 void vu() {
   //  delay(10);
   for (i = 0; i < 64; i++) {
-    val = ((analogRead(LCHAN) * 16 ) - 128 + 128);  // chose how to interpret the data from analog in
+    if (sensitivity < 0)
+      {val = ((analogRead(LCHAN) / sensitivity ));}
+    if (sensitivity == 0)
+      {val = ((analogRead(LCHAN) ));}
+    if (sensitivity > 0)
+      {val = ((analogRead(LCHAN) * sensitivity ));}
+
+    //val = ((analogRead(LCHAN) * 16 ));  // chose how to interpret the data from analog in
     // Serial.print(val);
     // Serial.println();
     data[i] = val;
     im[i] = 0;
     if (channels == 2) {
-      Rval = ((analogRead(RCHAN) * 16 ) - 128 + 128);  // chose how to interpret the data from analog in
+      if (sensitivity < 0)
+        {Rval = ((analogRead(RCHAN) / sensitivity ));}
+      if (sensitivity == 0)
+        {Rval = ((analogRead(RCHAN) ));}
+      if (sensitivity > 0)
+        {Rval = ((analogRead(RCHAN) * sensitivity ));}
+      
+      //Rval = ((analogRead(RCHAN) * 16 ));  // chose how to interpret the data from analog in
       Rdata[i] = Rval;
       Rim[i] = 0;
     }
@@ -453,7 +480,7 @@ void thirtytwoband() {
 
 void simple() {
   lcd.setCursor(0, 0);
-  lcd.print(" AudioFoLights  ");
+  lcd.print("  AudioFoLight  ");
   lcd.setCursor(0, 1);
   lcd.print(" Time: ");
   lcd.print("No clock");
@@ -469,8 +496,24 @@ void loop() {
   if (buttonVal == LOW && oldButtonVal == HIGH) {// button has just been pressed
     lightPattern = lightPattern + 1;
   }
+  
   if (lightPattern > nPatterns) lightPattern = 1;
   oldButtonVal = buttonVal;
+
+
+  int buttonSensitivity = digitalRead(buttonPin1);
+  if (buttonSensitivity == LOW && oldbuttonSensitivity == HIGH) {// button has just been pressed
+    sensitivity = sensitivity + 1;
+    lcd.setCursor(0, 0);
+    lcd.print("Sensitiv.: -4/24");
+    lcd.setCursor(0, 1);
+    lcd.print(sensitivity);
+    delay(500);
+  }
+  
+  if (sensitivity > 23) sensitivity = - 5;
+  oldbuttonSensitivity = buttonSensitivity;
+
   
   switch (lightPattern) {
     case 1:
