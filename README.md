@@ -16,5 +16,5 @@ I want to change some things:
 
 There is a lot of evolutions I am thinking, but for the moment I am more than happy.
 
-Documentation is on the Wiki:
+**Documentation is on the Wiki**:
 https://github.com/renaudrenaud/ArduinoLCDVumeter/wiki
