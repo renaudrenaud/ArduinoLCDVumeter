@@ -1,6 +1,8 @@
 # ArduinoLCDVumeter
 Arduino LCD Vumeter
 
+Please note: May 22 2019 -> Version for 4x20 LCD!
+
 Following what I've seen on youtube:
 https://www.youtube.com/channel/UCOG6Bi2kvpDa1c8gHWZI5CQ
 
