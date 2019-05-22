@@ -17,16 +17,19 @@ int buttonPin1 = 1;     // momentary push for sensitivity change
 int oldButtonVal = 0;
 int oldbuttonSensitivity = 0;
 const int channels = 2;
-const int xres = 20; //16;
-const int yres = 8;
-const int xres2 = 40; //32;
+const int xres = 16; //16;
+const int yres = 8; // maybe define the high, meaning resolution
+const int xres2 = 32; //32;
 const int yres2 = 8;
 const int gain = 3;
 int decaytest = 1;
+int Rdecaytest = 1;
 char im[64], data[64];
 char Rim[64], Rdata[64];
-char data_avgs[32];
-float peaks[32];
+char data_avgs[64];
+char Rdata_avgs[64];
+float peaks[20];
+float Rpeaks[20];
 int i = 0, val, Rval;
 int x = 0, y = 0, z = 0;
 int load;
@@ -151,9 +154,6 @@ void vu() {
       val = ((analogRead(LCHAN) * sensitivity ));
     }
 
-    //val = ((analogRead(LCHAN) * 16 ));  // chose how to interpret the data from analog in
-    // Serial.print(val);
-    // Serial.println();
     data[i] = val;
     im[i] = 0;
     if (channels == 2) {
@@ -182,20 +182,24 @@ void vu() {
   }
 
   // get the absolute value of the values in the array, so we're only dealing with positive numbers
-  for (i = 0; i < 32 ; i++) {
+  for (i = 0; i < 64 ; i++) {
     data[i] = sqrt(data[i] * data[i] + im[i] * im[i]);
   }
   if (channels == 2) {
-    for (i = 16; i < 32 ; i++) {
-      data[i] = sqrt(Rdata[i - 16] * Rdata[i - 16] + Rim[i - 16] * Rim[i - 16]);
+    for (i = 0; i < 64 ; i++) {
+      Rdata[i] = sqrt(Rdata[i] * Rdata[i] + Rim[i] * Rim[i]);
     }
   }
 
   // todo: average as many or as little dynamically based on yres
-  for (i = 0; i < 32; i++) {
+  for (i = 0; i < 64; i++) {
     data_avgs[i] = (data[i]);// + data[i*2+1]);// + data[i*3 + 2]);// + data[i*4 + 3]);  // add 3 samples to be averaged, use 4 when yres < 16
     data_avgs[i] = constrain(data_avgs[i], 0, 9 - gain); //data samples * range (0-9) = 9
     data_avgs[i] = map(data_avgs[i], 0, 9 - gain, 0, yres);      // remap averaged values
+
+    Rdata_avgs[i] = (Rdata[i]);// + data[i*2+1]);// + data[i*3 + 2]);// + data[i*4 + 3]);  // add 3 samples to be averaged, use 4 when yres < 16
+    Rdata_avgs[i] = constrain(Rdata_avgs[i], 0, 9 - gain); //data samples * range (0-9) = 9
+    Rdata_avgs[i] = map(Rdata_avgs[i], 0, 9 - gain, 0, yres);      // remap averaged values
   }
 
 } // end loop
@@ -210,7 +214,7 @@ void vu() {
 void decay(int decayrate) {
   //// reduce the values of the last peaks by 1
   if (decaytest == decayrate) {
-    for (x = 0; x < 32; x++) {
+    for (x = 0; x < 20; x++) {
       peaks[x] = peaks[x] - 1;  // subtract 1 from each column peaks
       decaytest = 0;
 
@@ -220,20 +224,32 @@ void decay(int decayrate) {
 
 }
 
+void Rdecay(int decayrate) {
+  //// reduce the values of the last peaks by 1
+  if (Rdecaytest == decayrate) {
+    for (x = 0; x < 20; x++) {
+      Rpeaks[x] = Rpeaks[x] - 1;  // subtract 1 from each column peaks
+      Rdecaytest = 0;
 
+    }
+  }
+  Rdecaytest++;
+
+}
 
 void Two16_LCD() {
   vu();
   decay(1);
+  Rdecay(1);
   lcd.setCursor(0, 0);
   lcd.print("L"); // Channel ID replaces bin #0 due to hum & noise
   lcd.setCursor(0, 1);
   lcd.print("R"); // ditto
 
-  for (int x = 1; x < 16; x++) {  // init 0 to show lowest band overloaded with hum
-    int y = x + 16; // second display line
+  for (int x = 1; x < 20; x++) {  // init 0 to show lowest band overloaded with hum
+    //int y = x + 16; // second display line
     if (data_avgs[x] > peaks[x]) peaks[x] = data_avgs[x];
-    if (data_avgs[y] > peaks[y]) peaks[y] = data_avgs[y];
+    if (Rdata_avgs[x] > Rpeaks[x]) Rpeaks[x] = Rdata_avgs[x];
 
     lcd.setCursor(x, 0); // draw first (top) row Left
     if (peaks[x] == 0) {
@@ -244,11 +260,11 @@ void Two16_LCD() {
     }
 
     lcd.setCursor(x, 1); // draw second (bottom) row Right
-    if (peaks[y] == 0) {
+    if (Rpeaks[x] == 0) {
       lcd.print("_");
     }
     else {
-      lcd.write(peaks[y]);
+      lcd.write(Rpeaks[x]);
 
     }
   }
@@ -300,73 +316,73 @@ void mono(int pos) {
   }  // end xres
 }
 
-void stereo8() {
+void stereo8(){
   vu();
-  decay(1);
-  lcd.setCursor(8, 1);
+   decay(1); 
+   lcd.setCursor(10, 1);
   lcd.print("R"); // Channel ID replaces bin #0 due to hum & noise
-  for (x = 1; x < 8; x++) {
+  for (x=1; x < 10; x++) {
     y = data_avgs[x];
-    z = peaks[x];
-    if (y > z) {
-      peaks[x] = y;
+        z= peaks[x];
+    if (y > z){
+      peaks[x]=y;
     }
-    y = peaks[x];
+    y= peaks[x]; 
 
-    if (y <= 8) {
-      lcd.setCursor(x, 0); // clear first row
+    if (y <= 9){            
+      lcd.setCursor(x,0); // clear first row
       lcd.print(" ");
-      lcd.setCursor(x, 1); // draw second row
-      if (y == 0) {
+      lcd.setCursor(x,1); // draw second row
+      if (y == 0){
         lcd.print(" "); // save a glyph
       }
       else {
         lcd.write(y);
       }
     }
-    else {
-      lcd.setCursor(x, 0); // draw first row
-      if (y == 9) {
-        lcd.write(32);
+    else{
+      lcd.setCursor(x,0);  // draw first row
+      if (y == 10){
+        lcd.write(32);  
       }
       else {
-        lcd.write(y - 8); // same chars 1-8 as 9-16
+        lcd.write(y-10);  // same chars 1-8 as 9-16
       }
-      lcd.setCursor(x, 1);
-      lcd.write(8);
+      lcd.setCursor(x,1);
+      lcd.write(8);  
     }
   }
   lcd.setCursor(0, 1);
   lcd.print("L"); // ditto
-  for (x = 17; x < 32; x++) {
+  for (x=17; x < 32; x++) {
     y = data_avgs[x];
-    z = peaks[x];
-    if (y > z) {
-      peaks[x] = y;
+       z= peaks[x];
+    if (y > z){
+      peaks[x]=y;
     }
-    y = peaks[x];
+    y= peaks[x]; 
 
-    if (y <= 8) {
-      lcd.setCursor(x - 8, 0); // clear first row
+    if (y <= 8){            
+      lcd.setCursor(x-8,0); // clear first row
       lcd.print(" ");
-      lcd.setCursor(x - 8, 1); // draw second row
-      if (y == 0) {
+      lcd.setCursor(x-8,1); // draw second row
+      if (y == 0){
         lcd.print(" "); // save a glyph
       }
       else {
         lcd.write(y);
       }
     }
-    else {
-      lcd.setCursor(x - 8, 0); // draw first row
-      if (y == 9) {
-        lcd.write(32);
+    else{
+      lcd.setCursor(x-8,0);  // draw first row
+      if (y == 9){
+        lcd.write(32);  
       }
       else {
-        lcd.write(y - 8); // same chars 1-8 as 9-16
+        lcd.write(y-8);  // same chars 1-8 as 9-16
       }
-      lcd.setCursor(x - 8, 1);
-      lcd.write(8);
+      lcd.setCursor(x-8,1);
+      lcd.write(8);  
     }
   }
 }
@@ -523,10 +539,12 @@ void loop() {
 
   int buttonSensitivity = digitalRead(buttonPin1);
   if (buttonSensitivity == LOW && oldbuttonSensitivity == HIGH) {// button has just been pressed
-    sensitivity = sensitivity + 4;
+    if (sensitivity < 5){sensitivity = sensitivity + 1;}
+    else{
+      sensitivity = sensitivity + 4;}
     lcd.setCursor(0, 0);
-    lcd.print("Sensitiv.: -4/36");
-    lcd.setCursor(0, 1);
+    lcd.print("Sensitiv.: -4/40 =");
+    lcd.setCursor(18, 0);
     lcd.print(sensitivity);
     delay(500);
   }
@@ -537,8 +555,8 @@ void loop() {
 
   switch (lightPattern) {
     case 1:
-      mono(0);// bars();
-      mono(1);
+      // mono(0);// bars();
+      Two16_LCD();
       break;
     case 2:
 
