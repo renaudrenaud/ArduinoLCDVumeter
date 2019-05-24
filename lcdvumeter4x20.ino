@@ -237,13 +237,13 @@ void Rdecay(int decayrate) {
 
 }
 
-void Two16_LCD() {
+void Two16_LCD(int linePos) {
   vu();
   decay(1);
   Rdecay(1);
-  lcd.setCursor(0, 0);
+  lcd.setCursor(0, linePos);
   lcd.print("L"); // Channel ID replaces bin #0 due to hum & noise
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, linePos + 1);
   lcd.print("R"); // ditto
 
   for (int x = 1; x < 20; x++) {  // init 0 to show lowest band overloaded with hum
@@ -251,7 +251,7 @@ void Two16_LCD() {
     if (data_avgs[x] > peaks[x]) peaks[x] = data_avgs[x];
     if (Rdata_avgs[x] > Rpeaks[x]) Rpeaks[x] = Rdata_avgs[x];
 
-    lcd.setCursor(x, 0); // draw first (top) row Left
+    lcd.setCursor(x, linePos); // draw first (top) row Left
     if (peaks[x] == 0) {
       lcd.print("_");  // less LCD artifacts than " "
     }
@@ -259,7 +259,7 @@ void Two16_LCD() {
       lcd.write(peaks[x]);
     }
 
-    lcd.setCursor(x, 1); // draw second (bottom) row Right
+    lcd.setCursor(x, linePos + 1); // draw second (bottom) row Right
     if (Rpeaks[x] == 0) {
       lcd.print("_");
     }
@@ -270,28 +270,25 @@ void Two16_LCD() {
   }
 }
 
-void mono(int pos) {
-  int linePos = 0;
-  if (pos == 0) {
-    linePos = 2;
-  }
+void mono(int linePos) {
+
   vu();
   decay(1);
   lcd.setCursor(0, linePos);
   lcd.print(" "); // Channel ID replaces bin #0 due to hum & noise
   lcd.setCursor(0, linePos + 1);
   lcd.print("M"); // ditto
-  lcd.setCursor(16, linePos + 1);
-  lcd.print("Mono"); // ditto
-  for (x = 1; x < 16; x++) { // repeat for each column of the display horizontal resolution
-    y = data_avgs[x];  // get current column value
-    z = peaks[x];
+
+  for (x = 1; x < 20; x++) { // repeat for each column of the display horizontal resolution
+    y = (data_avgs[x] + Rdata_avgs[x]) / 2 ;  // get current column value
+    z = peaks[x] + Rpeaks[x];
     if (y > z) {
       peaks[x] = y;
+      Rpeaks[x] = y;
     }
-    y = peaks[x];
+    y = peaks[x] + Rpeaks[x];
 
-    if (y <= 8) {
+    //if (y <= 10) {
       lcd.setCursor(x, linePos); // clear first row
       lcd.print(" ");
       lcd.setCursor(x, linePos + 1); // draw second row
@@ -300,19 +297,19 @@ void mono(int pos) {
       }
       else {
         lcd.write(y);
-      }
+    //  }
     }
-    else {
-      lcd.setCursor(x, linePos); // draw first row
-      if (y == 9) {
-        lcd.write(32); // RC  was " "
-      }
-      else {
-        lcd.write(y - 8); // same chars 1-8 as 9-16
-      }
-      lcd.setCursor(x, linePos + 1);
-      lcd.write(8);
-    } // end display
+    // else {
+    //   lcd.setCursor(x, linePos); // draw first row
+    //   if (y == 11) {
+    //     lcd.write(32); // RC  was " "
+    //   }
+    //   else {
+    //     lcd.write(y - 10); // same chars 1-8 as 9-16
+    //   }
+    //   lcd.setCursor(x, linePos + 1);
+    //   lcd.write(8);
+    // } // end display
   }  // end xres
 }
 
@@ -556,7 +553,8 @@ void loop() {
   switch (lightPattern) {
     case 1:
       // mono(0);// bars();
-      Two16_LCD();
+      Two16_LCD(0);
+      mono(2);
       break;
     case 2:
 
@@ -568,7 +566,7 @@ void loop() {
       stereo16();
       break;
     case 5:
-      Two16_LCD();
+      Two16_LCD(0);
       break;
     case 6:
       All();
