@@ -12,7 +12,7 @@ https://drive.google.com/file/d/1CDsYfHCmGF29VmMfurZrjdbP1BOJ_7Rj/view
 
 I want to change some things:
 - use an I2C LCD instead of usual LCD to save cables, time and useless complications
-- no temp nor time required
+- no temperature nor time required
 
 ... Ok after one sunday and one monday night, it is working like I want.
 
